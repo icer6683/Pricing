@@ -20,12 +20,14 @@ conn = wrds.Connection()
 
 company = conn.get_table(library='comp', table='company',
                          columns=['cik'], obs=10)
+print(company)
 
 rando = conn.raw_sql("""select permno, date, prc, ret, shrout 
                         from crsp.msf 
                         where permno = 14593
                         and date>='01/01/2019'""",
                      date_cols=['date'])
+print(rando)
 
 apple_fund = conn.raw_sql("""select a.gvkey, a.iid, a.datadate, a.tic, a.conm,
                             a.at, b.prccm, b.cshoq 
@@ -43,8 +45,3 @@ apple_fund = conn.raw_sql("""select a.gvkey, a.iid, a.datadate, a.tic, a.conm,
                             and a.consol = 'C' 
                             and a.indfmt = 'INDL'
                             """, date_cols=['datadate'])
-
-print(apple_fund)
-apple_fund.to_pickle(r"apple_fund.pkl")
-apple_fund.to_csv(r'apple_fund.csv')
-apple_fund.to_stata(r'apple_fund.dta')

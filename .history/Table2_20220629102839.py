@@ -45,6 +45,6 @@ apple_fund = conn.raw_sql("""select a.gvkey, a.iid, a.datadate, a.tic, a.conm,
                             """, date_cols=['datadate'])
 
 print(apple_fund)
-apple_fund.to_pickle(r"apple_fund.pkl")
-apple_fund.to_csv(r'apple_fund.csv')
-apple_fund.to_stata(r'apple_fund.dta')
+apple_fund.to_pickle("/Pricing/apple_fund.pkl")
+apple_fund.to_csv('/Pricing/apple_fund.csv')
+apple_fund.to_stata('/Pricing/apple_fund.dta')
