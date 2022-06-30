@@ -18,33 +18,31 @@ from scipy import stats
 # connect to WRDS
 conn = wrds.Connection()
 
-company = conn.get_table(library='comp', table='company',
-                         columns=['cik'], obs=10)
+comp = conn.raw_sql("""
+                    select gvkey, datadate, at, pstkl, txditc,
+                    pstkrv, seq, pstk
+                    from comp.funda
+                    where indfmt='INDL' 
+                    and datafmt='STD'
+                    and popsrc='D'
+                    and consol='C'
+                    and datadate >= '01/01/1959'
+                    """, date_cols=['datadate'])
 
-rando = conn.raw_sql("""select permno, date, prc, ret, shrout 
-                        from crsp.msf 
-                        where permno = 14593
-                        and date>='01/01/2019'""",
-                     date_cols=['date'])
+comp['year'] = comp['datadate'].dt.year
 
-apple_fund = conn.raw_sql("""select a.gvkey, a.iid, a.datadate, a.tic, a.conm,
-                            a.at, b.prccm, b.cshoq 
-                            
-                            from comp.funda a 
-                            inner join comp.secm b 
-                            
-                            on a.gvkey = b.gvkey
-                            and a.iid = b.iid
-                            and a.datadate = b.datadate 
-                            
-                            where a.tic = 'AAPL' 
-                            and a.datadate>='01/01/2010'
-                            and a.datafmt = 'STD' 
-                            and a.consol = 'C' 
-                            and a.indfmt = 'INDL'
-                            """, date_cols=['datadate'])
+comp_subset = comp.head(5)
 
-print(apple_fund)
-apple_fund.to_pickle(r"apple_fund.pkl")
-apple_fund.to_csv(r'apple_fund.csv')
-apple_fund.to_stata(r'apple_fund.dta')
+print(comp_subset)
+
+crsp_m = conn.raw_sql("""
+                      select a.permno, a.permco, a.date, b.shrcd, b.exchcd,
+                      a.ret, a.retx, a.shrout, a.prc
+                      from crsp.msf as a
+                      left join crsp.msenames as b
+                      on a.permno=b.permno
+                      and b.namedt<=a.date
+                      and a.date<=b.nameendt
+                      where a.date >= '01/01/1968'
+                      and b.exchcd between 1 and 3
+                      """, date_cols=['date'])
